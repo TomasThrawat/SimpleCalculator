@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,27 +68,36 @@ private fun AutoSizeResultText(
 ) {
     var fontSize by remember(text) { mutableStateOf(maxFontSize) }
     var readyToDraw by remember(text) { mutableStateOf(false) }
+    val density = LocalDensity.current
+    val reservedHeight = with(density) { (maxFontSize.toDp() * 1.25f) }
 
-    Text(
-        text = text,
-        color = Color.White,
-        fontSize = fontSize,
-        fontWeight = FontWeight.ExtraBold,
-        textAlign = TextAlign.Start,
-        maxLines = 1,
-        softWrap = false,
-        overflow = TextOverflow.Clip,
-        style = TextStyle(textDirection = TextDirection.Ltr),
-        modifier = modifier.drawWithContent { if (readyToDraw) drawContent() },
-        onTextLayout = { result ->
-            if (result.didOverflowWidth && fontSize.value > minFontSize.value) {
-                val next = (fontSize.value - 4f).sp
-                fontSize = if (next.value < minFontSize.value) minFontSize else next
-            } else {
-                readyToDraw = true
+    Box(
+        modifier = modifier.height(reservedHeight),
+        contentAlignment = Alignment.BottomStart
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = fontSize,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Start,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            style = TextStyle(textDirection = TextDirection.Ltr),
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawWithContent { if (readyToDraw) drawContent() },
+            onTextLayout = { result ->
+                if (result.didOverflowWidth && fontSize.value > minFontSize.value) {
+                    val next = (fontSize.value - 4f).sp
+                    fontSize = if (next.value < minFontSize.value) minFontSize else next
+                } else {
+                    readyToDraw = true
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
