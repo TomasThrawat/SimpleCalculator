@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = Color.Black)) {
                 Surface(color = Color.Black) {
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                         CalculatorScreen()
                     }
                 }
@@ -195,31 +195,29 @@ fun CalculatorScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.Bottom
     ) {
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-            Column {
-                Text(
-                    text = topLine,
-                    color = Color(0xFFAAAAAA),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Clip,
-                    style = TextStyle(textDirection = TextDirection.Ltr),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(topLineScroll)
-                        .padding(bottom = 4.dp)
-                )
+        Column {
+            Text(
+                text = topLine,
+                color = Color(0xFFAAAAAA),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Start,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Clip,
+                style = TextStyle(textDirection = TextDirection.Ltr),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(topLineScroll)
+                    .padding(bottom = 4.dp)
+            )
 
-                AutoSizeResultText(
-                    text = currentNumber,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
-                )
-            }
+            AutoSizeResultText(
+                text = currentNumber,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            )
         }
 
         val rows = listOf(
