@@ -12,8 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -149,6 +151,7 @@ fun CalculatorScreen() {
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
                     maxLines = 2,
+                    style = TextStyle(textDirection = TextDirection.Ltr),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                 )
 
@@ -158,6 +161,7 @@ fun CalculatorScreen() {
                     fontSize = 80.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Start,
+                    style = TextStyle(textDirection = TextDirection.Ltr),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
                 )
             }
