@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -54,6 +56,38 @@ private fun applyOp(a: Double, b: Double, op: Op): Double = when (op) {
     Op.MUL -> a * b
     Op.DIV -> if (b != 0.0) a / b else Double.NaN
     Op.NONE -> b
+}
+
+@Composable
+private fun AutoSizeResultText(
+    text: String,
+    modifier: Modifier = Modifier,
+    maxFontSize: TextUnit = 80.sp,
+    minFontSize: TextUnit = 32.sp,
+) {
+    var fontSize by remember(text) { mutableStateOf(maxFontSize) }
+    var readyToDraw by remember(text) { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        color = Color.White,
+        fontSize = fontSize,
+        fontWeight = FontWeight.ExtraBold,
+        textAlign = TextAlign.Start,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
+        style = TextStyle(textDirection = TextDirection.Ltr),
+        modifier = modifier.drawWithContent { if (readyToDraw) drawContent() },
+        onTextLayout = { result ->
+            if (result.didOverflowWidth && fontSize.value > minFontSize.value) {
+                val next = (fontSize.value - 4f).sp
+                fontSize = if (next.value < minFontSize.value) minFontSize else next
+            } else {
+                readyToDraw = true
+            }
+        }
+    )
 }
 
 @Composable
@@ -139,9 +173,7 @@ fun CalculatorScreen() {
     }
 
     val topLineScroll = rememberScrollState()
-    val numberScroll = rememberScrollState()
     LaunchedEffect(topLine) { topLineScroll.scrollTo(topLineScroll.maxValue) }
-    LaunchedEffect(currentNumber) { numberScroll.scrollTo(numberScroll.maxValue) }
 
     Column(
         modifier = Modifier
@@ -168,19 +200,10 @@ fun CalculatorScreen() {
                         .padding(bottom = 4.dp)
                 )
 
-                Text(
+                AutoSizeResultText(
                     text = currentNumber,
-                    color = Color.White,
-                    fontSize = 80.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = TextOverflow.Clip,
-                    style = TextStyle(textDirection = TextDirection.Ltr),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(numberScroll)
                         .padding(bottom = 24.dp)
                 )
             }
@@ -200,7 +223,7 @@ fun CalculatorScreen() {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { (label, action) ->
-                    val isOp = label in listOf("÷", "×", "−", "+", "=")
+                    val isOp = label in listOf("×", "÷", "−", "+", "=")
                     val isTop = label in listOf("C", "±", "%")
                     Button(
                         onClick = action,
