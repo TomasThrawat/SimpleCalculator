@@ -11,8 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -22,7 +24,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = Color.Black)) {
                 Surface(color = Color.Black) {
-                    CalculatorScreen()
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        CalculatorScreen()
+                    }
                 }
             }
         }
@@ -86,7 +90,7 @@ fun CalculatorScreen() {
         if (pendingOp != Op.NONE) {
             history = "${formatResult(pendingValue)} ${opSymbol(pendingOp)} ${formatResult(current)}"
             val result = applyOp(pendingValue, current, pendingOp)
-            display = if (result.isNaN()) "خطأ" else formatResult(result)
+            display = if (result.isNaN()) "NaN" else formatResult(result)
         }
         pendingOp = Op.NONE
         newInput = true
