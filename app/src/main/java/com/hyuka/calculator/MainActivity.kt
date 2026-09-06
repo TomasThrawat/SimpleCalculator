@@ -84,7 +84,7 @@ fun CalculatorScreen() {
     fun onEquals() {
         val current = display.toDoubleOrNull() ?: 0.0
         if (pendingOp != Op.NONE) {
-            history = "${formatResult(pendingValue)} ${opSymbol(pendingOp)} ${formatResult(current)} ="
+            history = "${formatResult(pendingValue)} ${opSymbol(pendingOp)} ${formatResult(current)}"
             val result = applyOp(pendingValue, current, pendingOp)
             display = if (result.isNaN()) "خطأ" else formatResult(result)
         }
@@ -115,19 +115,19 @@ fun CalculatorScreen() {
     ) {
         Text(
             text = history,
-            color = Color(0xFF888888),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.End,
+            color = Color(0xFFAAAAAA),
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
         )
 
         Text(
             text = display,
             color = Color.White,
-            fontSize = 56.sp,
-            fontWeight = FontWeight.Light,
-            textAlign = TextAlign.End,
+            fontSize = 80.sp,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
         )
 
