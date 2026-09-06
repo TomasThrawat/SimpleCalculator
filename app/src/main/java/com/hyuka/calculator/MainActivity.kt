@@ -140,24 +140,28 @@ fun CalculatorScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.Bottom
     ) {
-        Text(
-            text = topLine,
-            color = Color(0xFFAAAAAA),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Start,
-            maxLines = 2,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-        )
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            Column {
+                Text(
+                    text = topLine,
+                    color = Color(0xFFAAAAAA),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start,
+                    maxLines = 2,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                )
 
-        Text(
-            text = currentNumber,
-            color = Color.White,
-            fontSize = 80.sp,
-            fontWeight = FontWeight.ExtraBold,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
-        )
+                Text(
+                    text = currentNumber,
+                    color = Color.White,
+                    fontSize = 80.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                )
+            }
+        }
 
         val rows = listOf(
             listOf("C" to { onClear() }, "±" to { onSign() }, "%" to { onPercent() }, "÷" to { onOperator(Op.DIV) }),
