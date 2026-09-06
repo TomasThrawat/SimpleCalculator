@@ -31,9 +31,18 @@ class MainActivity : ComponentActivity() {
 
 private enum class Op { ADD, SUB, MUL, DIV, NONE }
 
+private fun opSymbol(op: Op): String = when (op) {
+    Op.ADD -> "+"
+    Op.SUB -> "−"
+    Op.MUL -> "×"
+    Op.DIV -> "÷"
+    Op.NONE -> ""
+}
+
 @Composable
 fun CalculatorScreen() {
     var display by remember { mutableStateOf("0") }
+    var history by remember { mutableStateOf("") }
     var pendingValue by remember { mutableStateOf(0.0) }
     var pendingOp by remember { mutableStateOf(Op.NONE) }
     var newInput by remember { mutableStateOf(true) }
@@ -67,6 +76,7 @@ fun CalculatorScreen() {
         } else {
             pendingValue = current
         }
+        history = "${formatResult(pendingValue)} ${opSymbol(op)}"
         pendingOp = op
         newInput = true
     }
@@ -74,6 +84,7 @@ fun CalculatorScreen() {
     fun onEquals() {
         val current = display.toDoubleOrNull() ?: 0.0
         if (pendingOp != Op.NONE) {
+            history = "${formatResult(pendingValue)} ${opSymbol(pendingOp)} ${formatResult(current)} ="
             val result = applyOp(pendingValue, current, pendingOp)
             display = if (result.isNaN()) "خطأ" else formatResult(result)
         }
@@ -82,7 +93,7 @@ fun CalculatorScreen() {
     }
 
     fun onClear() {
-        display = "0"; pendingValue = 0.0; pendingOp = Op.NONE; newInput = true
+        display = "0"; history = ""; pendingValue = 0.0; pendingOp = Op.NONE; newInput = true
     }
 
     fun onSign() {
@@ -102,6 +113,15 @@ fun CalculatorScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.Bottom
     ) {
+        Text(
+            text = history,
+            color = Color(0xFF888888),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.End,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+        )
+
         Text(
             text = display,
             color = Color.White,
