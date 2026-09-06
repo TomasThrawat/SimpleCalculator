@@ -53,23 +53,19 @@ private fun applyOp(a: Double, b: Double, op: Op): Double = when (op) {
 
 @Composable
 fun CalculatorScreen() {
-    var expression by remember { mutableStateOf("") }
     var currentNumber by remember { mutableStateOf("0") }
     var terms by remember { mutableStateOf(listOf<Pair<String, Op>>()) }
     var newInput by remember { mutableStateOf(true) }
     var justEvaluated by remember { mutableStateOf(false) }
+    var finishedExpression by remember { mutableStateOf("") }
 
     fun formatResult(v: Double): String =
         if (v == v.toLong().toDouble()) v.toLong().toString() else v.toString()
 
-    fun rebuildExpression() {
-        expression = terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" }
-    }
-
     fun startFreshIfNeeded() {
         if (justEvaluated) {
             terms = listOf()
-            expression = ""
+            finishedExpression = ""
             justEvaluated = false
         }
     }
@@ -93,7 +89,6 @@ fun CalculatorScreen() {
     fun onOperator(op: Op) {
         justEvaluated = false
         terms = terms + (currentNumber to op)
-        rebuildExpression()
         newInput = true
     }
 
@@ -106,7 +101,7 @@ fun CalculatorScreen() {
             val nextVal = allTerms[i].first.toDoubleOrNull() ?: 0.0
             acc = applyOp(acc, nextVal, prevOp)
         }
-        expression = terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" } + " $currentNumber ="
+        finishedExpression = terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" } + " $currentNumber ="
         currentNumber = if (acc.isNaN()) "NaN" else formatResult(acc)
         terms = listOf()
         newInput = true
@@ -115,8 +110,8 @@ fun CalculatorScreen() {
 
     fun onClear() {
         currentNumber = "0"
-        expression = ""
         terms = listOf()
+        finishedExpression = ""
         newInput = true
         justEvaluated = false
     }
@@ -131,6 +126,13 @@ fun CalculatorScreen() {
         currentNumber = formatResult(current / 100)
     }
 
+    val topLine = when {
+        justEvaluated -> finishedExpression
+        terms.isEmpty() -> ""
+        newInput -> terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" }
+        else -> terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" } + " " + currentNumber
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -139,7 +141,7 @@ fun CalculatorScreen() {
         verticalArrangement = Arrangement.Bottom
     ) {
         Text(
-            text = expression,
+            text = topLine,
             color = Color(0xFFAAAAAA),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
