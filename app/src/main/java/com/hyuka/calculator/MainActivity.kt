@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +18,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -135,6 +138,11 @@ fun CalculatorScreen() {
         else -> terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" } + " " + currentNumber
     }
 
+    val topLineScroll = rememberScrollState()
+    val numberScroll = rememberScrollState()
+    LaunchedEffect(topLine) { topLineScroll.scrollTo(topLineScroll.maxValue) }
+    LaunchedEffect(currentNumber) { numberScroll.scrollTo(numberScroll.maxValue) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -150,9 +158,14 @@ fun CalculatorScreen() {
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Start,
-                    maxLines = 2,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Clip,
                     style = TextStyle(textDirection = TextDirection.Ltr),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(topLineScroll)
+                        .padding(bottom = 4.dp)
                 )
 
                 Text(
@@ -161,8 +174,14 @@ fun CalculatorScreen() {
                     fontSize = 80.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Clip,
                     style = TextStyle(textDirection = TextDirection.Ltr),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(numberScroll)
+                        .padding(bottom = 24.dp)
                 )
             }
         }
