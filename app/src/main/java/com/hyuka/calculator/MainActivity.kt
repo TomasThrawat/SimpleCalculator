@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(background = Color.Black)) {
                 Surface(color = Color.Black) {
-                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         CalculatorScreen()
                     }
                 }
