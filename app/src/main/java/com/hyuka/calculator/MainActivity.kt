@@ -12,12 +12,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,15 +66,28 @@ private fun AutoSizeResultText(
     maxFontSize: TextUnit = 80.sp,
     minFontSize: TextUnit = 32.sp,
 ) {
-    var fontSize by remember(text) { mutableStateOf(maxFontSize) }
-    var readyToDraw by remember(text) { mutableStateOf(false) }
     val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
     val reservedHeight = with(density) { (maxFontSize.toDp() * 1.25f) }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier.height(reservedHeight),
         contentAlignment = Alignment.BottomStart
     ) {
+        val maxWidthPx = with(density) { maxWidth.toPx() }
+        val fontSize = remember(text, maxWidthPx) {
+            var size = maxFontSize
+            while (size.value > minFontSize.value) {
+                val measured = textMeasurer.measure(
+                    text = text,
+                    style = TextStyle(fontSize = size, fontWeight = FontWeight.ExtraBold)
+                )
+                if (measured.size.width <= maxWidthPx) break
+                size = (size.value - 4f).sp
+            }
+            if (size.value < minFontSize.value) minFontSize else size
+        }
+
         Text(
             text = text,
             color = Color.White,
@@ -85,17 +98,7 @@ private fun AutoSizeResultText(
             softWrap = false,
             overflow = TextOverflow.Clip,
             style = TextStyle(textDirection = TextDirection.Ltr),
-            modifier = Modifier
-                .fillMaxWidth()
-                .drawWithContent { if (readyToDraw) drawContent() },
-            onTextLayout = { result ->
-                if (result.didOverflowWidth && fontSize.value > minFontSize.value) {
-                    val next = (fontSize.value - 4f).sp
-                    fontSize = if (next.value < minFontSize.value) minFontSize else next
-                } else {
-                    readyToDraw = true
-                }
-            }
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
