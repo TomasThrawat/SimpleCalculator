@@ -43,71 +43,92 @@ private fun opSymbol(op: Op): String = when (op) {
     Op.NONE -> ""
 }
 
+private fun applyOp(a: Double, b: Double, op: Op): Double = when (op) {
+    Op.ADD -> a + b
+    Op.SUB -> a - b
+    Op.MUL -> a * b
+    Op.DIV -> if (b != 0.0) a / b else Double.NaN
+    Op.NONE -> b
+}
+
 @Composable
 fun CalculatorScreen() {
-    var display by remember { mutableStateOf("0") }
-    var history by remember { mutableStateOf("") }
-    var pendingValue by remember { mutableStateOf(0.0) }
-    var pendingOp by remember { mutableStateOf(Op.NONE) }
+    var expression by remember { mutableStateOf("") }
+    var currentNumber by remember { mutableStateOf("0") }
+    var terms by remember { mutableStateOf(listOf<Pair<String, Op>>()) }
     var newInput by remember { mutableStateOf(true) }
+    var justEvaluated by remember { mutableStateOf(false) }
 
     fun formatResult(v: Double): String =
         if (v == v.toLong().toDouble()) v.toLong().toString() else v.toString()
 
-    fun applyOp(a: Double, b: Double, op: Op): Double = when (op) {
-        Op.ADD -> a + b
-        Op.SUB -> a - b
-        Op.MUL -> a * b
-        Op.DIV -> if (b != 0.0) a / b else Double.NaN
-        Op.NONE -> b
+    fun rebuildExpression() {
+        expression = terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" }
+    }
+
+    fun startFreshIfNeeded() {
+        if (justEvaluated) {
+            terms = listOf()
+            expression = ""
+            justEvaluated = false
+        }
     }
 
     fun onDigit(d: String) {
-        display = if (newInput || display == "0") d else display + d
+        startFreshIfNeeded()
+        currentNumber = if (newInput || currentNumber == "0") d else currentNumber + d
         newInput = false
     }
 
     fun onDot() {
-        if (newInput) { display = "0."; newInput = false }
-        else if (!display.contains(".")) display += "."
+        startFreshIfNeeded()
+        if (newInput) {
+            currentNumber = "0."
+            newInput = false
+        } else if (!currentNumber.contains(".")) {
+            currentNumber += "."
+        }
     }
 
     fun onOperator(op: Op) {
-        val current = display.toDoubleOrNull() ?: 0.0
-        if (pendingOp != Op.NONE && !newInput) {
-            pendingValue = applyOp(pendingValue, current, pendingOp)
-            display = formatResult(pendingValue)
-        } else {
-            pendingValue = current
-        }
-        history = "${formatResult(pendingValue)} ${opSymbol(op)}"
-        pendingOp = op
+        justEvaluated = false
+        terms = terms + (currentNumber to op)
+        rebuildExpression()
         newInput = true
     }
 
     fun onEquals() {
-        val current = display.toDoubleOrNull() ?: 0.0
-        if (pendingOp != Op.NONE) {
-            history = "${formatResult(pendingValue)} ${opSymbol(pendingOp)} ${formatResult(current)}"
-            val result = applyOp(pendingValue, current, pendingOp)
-            display = if (result.isNaN()) "NaN" else formatResult(result)
+        if (terms.isEmpty()) return
+        val allTerms = terms + (currentNumber to Op.NONE)
+        var acc = allTerms[0].first.toDoubleOrNull() ?: 0.0
+        for (i in 1 until allTerms.size) {
+            val prevOp = allTerms[i - 1].second
+            val nextVal = allTerms[i].first.toDoubleOrNull() ?: 0.0
+            acc = applyOp(acc, nextVal, prevOp)
         }
-        pendingOp = Op.NONE
+        expression = terms.joinToString(" ") { (num, op) -> "$num ${opSymbol(op)}" } + " $currentNumber ="
+        currentNumber = if (acc.isNaN()) "NaN" else formatResult(acc)
+        terms = listOf()
         newInput = true
+        justEvaluated = true
     }
 
     fun onClear() {
-        display = "0"; history = ""; pendingValue = 0.0; pendingOp = Op.NONE; newInput = true
+        currentNumber = "0"
+        expression = ""
+        terms = listOf()
+        newInput = true
+        justEvaluated = false
     }
 
     fun onSign() {
-        val current = display.toDoubleOrNull() ?: 0.0
-        display = formatResult(current * -1)
+        val current = currentNumber.toDoubleOrNull() ?: 0.0
+        currentNumber = formatResult(current * -1)
     }
 
     fun onPercent() {
-        val current = display.toDoubleOrNull() ?: 0.0
-        display = formatResult(current / 100)
+        val current = currentNumber.toDoubleOrNull() ?: 0.0
+        currentNumber = formatResult(current / 100)
     }
 
     Column(
@@ -118,16 +139,17 @@ fun CalculatorScreen() {
         verticalArrangement = Arrangement.Bottom
     ) {
         Text(
-            text = history,
+            text = expression,
             color = Color(0xFFAAAAAA),
-            fontSize = 32.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Start,
+            maxLines = 2,
             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
         )
 
         Text(
-            text = display,
+            text = currentNumber,
             color = Color.White,
             fontSize = 80.sp,
             fontWeight = FontWeight.ExtraBold,
